@@ -1,5 +1,8 @@
 # General
 pandas
+
+# Visualisation
+seaborn
 matplotlib
 
 # Models
