@@ -18,11 +18,11 @@ import utils
 
 # --- [MUSZÁJ MÓDOSÍTANI] ---
 # Itt add meg a célváltozód (target) nevét
-TARGET_COLUMN = "target_column_name" 
+TARGET_COLUMN = "isFraud" 
 
 # --- [MUSZÁJ MÓDOSÍTANI] ---
 # A nyers adatfájlod neve a 'data/raw/' mappában
-RAW_DATA_FILENAME = "your_raw_data.csv" 
+RAW_DATA_FILENAME = "ieee_fraud.csv" 
 # ------------------------------
 
 
@@ -130,7 +130,7 @@ def load_and_preprocess_data(
         X, y, 
         test_size=test_size, 
         random_state=random_state, 
-        stratify=y # Fontos klasszifikációnál, hogy az arányok megmaradjanak
+        stratify=y
     )
     logging.info(f"Adatok szétválasztva. Train méret: {X_train.shape}, Test méret: {X_test.shape}")
 

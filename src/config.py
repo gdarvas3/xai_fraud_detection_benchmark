@@ -13,11 +13,14 @@ PLOTS_PATH = RESULTS_PATH / "plots"
 MODELS_PATH = RESULTS_PATH / "models"
 
 
-TEST_SPLIT_SIZE = 5
+TEST_SPLIT_SIZE = 0.2
 RANDOM_STATE = 42
 
+RUN_SHAP = True
+RUN_LIME = False
+
 MODELS_TO_RUN = ['logistic_regression', 'random_forest', 'gradient_boosting']
-METRICS = ['accuracy', 'f1_score', 'roc_auc']
+METRICS = ['accuracy', 'f1_score', 'pr_auc']
 
 MODEL_CONFIGS = {
     'logistic_regression': {

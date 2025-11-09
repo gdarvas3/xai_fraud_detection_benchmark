@@ -21,77 +21,61 @@ TREE_BASED_MODELS = [
 ]
 
 # SHAP explanation
-def generate_shap_values(model, X_data: pd.DataFrame, model_name: str, save_path: Path):
+def generate_shap_values(
+    model, 
+    X_train_full: pd.DataFrame,  # <-- Új paraméter: a teljes train adat
+    X_to_explain: pd.DataFrame,  # <-- Új paraméter: a test adat
+    model_name: str, 
+    save_path: Path
+):
     """
-    Generates SHAP explanation for a given model and saves the figure and the SHAP values
+    Generates SHAP explanation for a given model...
     
     Args:
-        model: Traind model object
-        X_data (pd.DataFrame): Pandas dataframe on which the explanation is generated
-        model_name (str): Name of the model
-        save_path (Path): Path to save
+        model: Trained model object
+        X_train_full (pd.DataFrame): A TELJES train adathalmaz, amiből mintát veszünk.
+        X_to_explain (pd.DataFrame): Az adathalmaz, amit magyarázni akarunk (pl. X_test).
+        ...
     """
     logging.info(f"Starting SHAP explanation on model: {model_name}...")
     
     try:
-        # 1. Select explainer
+        # 1. Háttéradat létrehozása (a te javaslatod alapján)
+        # Ezt a mintát használjuk referenciaként.
+        # 100-200 minta elég, hogy ne legyen lassú a KernelExplainer.
+        X_background = shap.sample(X_train_full, 100) 
+        
+        # 2. A helyes explainer kiválasztása
         model_type = type(model).__name__
         
         if model_type in TREE_BASED_MODELS:
             logging.debug("SHAP: Using TreeExplainer.")
-            # For tree-based models TreeExplainer is more efficient
-            explainer = shap.TreeExplainer(model)
-            # SHAP values 
-            shap_values_obj = explainer(X_data)
+            explainer = shap.TreeExplainer(model, X_background)
+        
+        elif model_type == 'LogisticRegression':
+            logging.debug("SHAP: Using LinearExplainer.")
+            # A LinearExplainer is igényli a háttéradatot a korrelációkhoz
+            explainer = shap.LinearExplainer(model, X_background)
 
         else:
-            logging.debug("SHAP: KernelExplainer vagy PermutationExplainer használata.")
-            # General but slower SHAP explainer for the other models
-            explainer = shap.Explainer(model.predict_proba, X_data)
-            shap_values_obj = explainer(X_data)
+            logging.warning(f"SHAP: No specific explainer for {model_type}. Using slow KernelExplainer.")
+            # A KernelExplainer a háttéradatot (X_background) használja inicializáláshoz
+            explainer = shap.KernelExplainer(model.predict_proba, X_background)
 
-        # 2. SHAP values for the positive class
+        # 3. SHAP értékek számítása a magyarázandó adaton (X_to_explain)
+        logging.info("Calculating SHAP values...")
+        shap_values_obj = explainer(X_to_explain)
+        logging.info("SHAP calculation finished.")
 
-        #The Explainer returns and 'Explanation' object, we must check if the shape is 3D (binary classification)
+        # ... (A kódod többi része a plotolásról és mentésről)
+        # Győződj meg róla, hogy a plotolás és mentés 'X_to_explain'-t használja
         
-        shap_values_for_plot = shap_values_obj
-        shap_values_for_csv = shap_values_obj.values
-
-        if len(shap_values_obj.values.shape) == 3:
-            shap_values_for_plot = shap_values_obj[:, :, 1]
-            shap_values_for_csv = shap_values_obj.values[:, :, 1]
-        elif len(shap_values_obj.values.shape) != 2:
-            logging.warning("Unexpected SHAP dimension.")
-
-        # 3. Save summary plot
-        plot_filename = save_path / f"{model_name}_shap_summary_plot.png"
-        logging.info(f"SHAP summary plot generated and saved to: {plot_filename}")
-
-        plt.figure()
-
-        shap.summary_plot(
-            shap_values_for_plot,
-            X_data,
-            plot_type="beeswarm",
-            show=False
-        )
-        
-        # Save matplotlib figure
-        plt.savefig(plot_filename, bbox_inches='tight')
-        plt.close()
-
-        # 4. Save raw SHAP values
-        shap_filename = save_path / f"{model_name}_shap_values.csv"
-        logging.info(f"Raw SHAP values saved to: {shap_filename}")
-        
-        # Create a dataframe from raw values
-        shap_df = pd.DataFrame(shap_values_for_csv, columns=X_data.columns)
-        shap_df.to_csv(shap_filename, index=False)
+        # ... (pl. shap_df = pd.DataFrame(shap_values_for_csv, columns=X_to_explain.columns))
 
     except Exception as e:
-        # Log error
         logging.error(f"Hiba a SHAP magyarázat generálása során ({model_name}): {e}", exc_info=True)
-
+    except Exception as e:
+        logging.error(f"Hiba a SHAP magyarázat generálása során ({model_name}): {e}", exc_info=True)
 
 # LIME explanation
 

@@ -87,12 +87,12 @@ def run_benchmark():
             logging.info(f"Model saved to: {model_save_path}")
 
             # 3.4 Generate explanation
-            #TODO
             if config.RUN_SHAP:
                 logging.info(f"SHAP magyarázat generálása ({model_name})...")
                 explain.generate_shap_values(
                     model=trained_model,
-                    X_data=X_test,
+                    X_train_full=X_train,
+                    X_to_explain = X_test,
                     model_name=model_name,
                     save_path=config.EXPLANATIONS_SHAP_PATH
                 )

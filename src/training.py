@@ -11,7 +11,8 @@ from sklearn.metrics import (
     f1_score,
     precision_score,
     recall_score,
-    roc_auc_score
+    roc_auc_score,
+    average_precision_score
 )
 
 from sklearn.base import BaseEstimator
@@ -39,7 +40,7 @@ def _calculate_metrics(
             if metric_name == 'accuracy':
                 results[metric_name] = accuracy_score(y_true, y_pred)
             
-            elif metric_name == 'f1':
+            elif metric_name == 'f1_score':
                 results[metric_name] = f1_score(y_true, y_pred, average=avg_method)
             
             elif metric_name == 'precision':
@@ -60,6 +61,12 @@ def _calculate_metrics(
                     else:
                         results[metric_name] = roc_auc_score(y_true, y_proba, multi_class='ovr', average=avg_method)
             
+            elif metric_name == 'pr_auc':
+                if y_proba is None:
+                    logging.warning(f"Can not calculate PR-AUC pred_proba is missing")
+                    results[metric_name] = None
+                else:
+                    results[metric_name] = average_precision_score(y_true, y_proba)
             else:
                 logging.warning(f"Unkonwn metric: '{metric_name}'")
                 
