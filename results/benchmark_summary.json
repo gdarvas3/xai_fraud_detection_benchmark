@@ -1,17 +1,17 @@
 {
     "logistic_regression": {
-        "accuracy": 0.9720086700308193,
-        "f1_score": 0.9648632181206812,
-        "pr_auc": null
+        "accuracy": 0.9645,
+        "f1_score": 0.9599949731165981,
+        "pr_auc": 0.27440597908410147
     },
     "random_forest": {
-        "accuracy": 0.9733887628272428,
-        "f1_score": 0.9660632551414539,
-        "pr_auc": null
+        "accuracy": 0.9715,
+        "f1_score": 0.9635200917033202,
+        "pr_auc": 0.39557342902801895
     },
-    "gradient_boosting": {
-        "accuracy": 0.9745063839875369,
-        "f1_score": 0.9688491915681886,
-        "pr_auc": null
+    "lof": {
+        "accuracy": 0.7725,
+        "f1_score": 0.8434778785341934,
+        "pr_auc": 0.10849819937636335
     }
 }

@@ -16,7 +16,7 @@ from typing import Any, Dict
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import seaborn as sns
+#import seaborn as sns
 
 # --- 1. Reprodukálhatóság ---
 
@@ -126,12 +126,12 @@ def plot_metric_comparison(
 
         # Ábra készítése (Seaborn-nal szebb)
         plt.figure(figsize=(10, 6))
-        ax = sns.barplot(
-            x='Modell',
-            y=metric_to_plot,
-            data=df,
-            palette='viridis' # Színpaletta
-        )
+        # ax = sns.barplot(
+        #     x='Modell',
+        #     y=metric_to_plot,
+        #     data=df,
+        #     palette='viridis' # Színpaletta
+        # )
         
         # Címkék és címek
         ax.set_title(f"Modellek összehasonlítása: {metric_to_plot.upper()}", fontsize=16)

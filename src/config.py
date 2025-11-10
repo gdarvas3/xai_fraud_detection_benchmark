@@ -17,9 +17,12 @@ TEST_SPLIT_SIZE = 0.2
 RANDOM_STATE = 42
 
 RUN_SHAP = True
-RUN_LIME = False
+RUN_LIME = True
 
-MODELS_TO_RUN = ['logistic_regression', 'random_forest', 'gradient_boosting']
+SUPERVISED_MODELS = ['logistic_regression', 'random_forest']
+UNSUPERVISED_MODELS = ['lof']
+MODELS_TO_RUN = SUPERVISED_MODELS + UNSUPERVISED_MODELS
+
 METRICS = ['accuracy', 'f1_score', 'pr_auc']
 
 MODEL_CONFIGS = {
@@ -34,5 +37,8 @@ MODEL_CONFIGS = {
     'gradient_boosting': {
         'n_estimators': 150,
         'learning_rate': 0.1
+    },
+    'lof':{
+        'novelty': True
     }
 }

@@ -1,5 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.neighbors import LocalOutlierFactor
 
 def get_model(model_name, params):
     """
@@ -11,5 +12,7 @@ def get_model(model_name, params):
         return RandomForestClassifier(**params)
     elif model_name == 'gradient_boosting':
         return GradientBoostingClassifier(**params)
+    elif model_name == 'lof':
+        return LocalOutlierFactor(**params)
     else:
         raise ValueError(f"Model not found in model list: {model_name}")

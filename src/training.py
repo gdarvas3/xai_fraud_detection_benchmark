@@ -76,8 +76,35 @@ def _calculate_metrics(
             
     return results
 
+def _get_unsupervised_scores(
+    model: Model, 
+    X_test: pd.DataFrame
+) -> Union[np.ndarray, None]:
+    """
+    Lekéri az anomália pontszámokat (decision_function vagy score_samples).
+    Mindig úgy adja vissza, hogy a MAGASABB érték jelentse az anomáliát.
+    """
+    if hasattr(model, "decision_function"):
+        # A legtöbb modell (pl. IsolationForest, OneClassSVM) 
+        # decision_function-t ad, ahol az ALACSONYABB pontszám az anomália.
+        # Ezért megfordítjuk (negáljuk), hogy a magasabb legyen a rosszabb.
+        logging.debug("Using -decision_function() for scores.")
+        return -model.decision_function(X_test)
+        
+    elif hasattr(model, "score_samples"):
+        # Pl. LocalOutlierFactor (novelty=True)
+        # Itt a score_samples a "normalitás" mértéke (magasabb a jobb),
+        # tehát szintén negálni kell.
+        logging.debug("Using -score_samples() for scores.")
+        return -model.score_samples(X_test)
+        
+    else:
+        logging.warning(f"Model {type(model).__name__} has no decision_function or score_samples. "
+                        "PR-AUC and ROC-AUC will be unavailable.")
+        return None
 
-def train_and_evaluate(
+
+def train_and_evaluate_supervised(
     model: Model,
     X_train: pd.DataFrame,
     y_train: pd.Series,
@@ -120,7 +147,7 @@ def train_and_evaluate(
     
     # Generating prediction probabilities (if supported by model)
     y_proba = None
-    if 'roc_auc' in metrics_to_calc:
+    if 'pr_auc' in metrics_to_calc:
         if hasattr(model, "predict_proba"):
             try:
                 # A [:, 1] a "pozitív" osztály valószínűségét adja (bináris esetben)
@@ -145,4 +172,62 @@ def train_and_evaluate(
     
     # --- 4. Visszatérés ---
     # Visszaadjuk a már tanított modellt és a metrikákat
+    return model, metrics_results
+
+def train_and_evaluate_unsupervised(
+    model: Model,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,  # Ezt az argumentumot fogadja, de NEM HASZNÁLJA!
+    X_test: pd.DataFrame,
+    y_test: pd.Series,
+    metrics_to_calc: List[str]
+) -> Tuple[Model, MetricsDict]:
+    """
+    Train and evaluate an UNSUPERVISED anomaly detection model.
+    It evaluates the model as if it were a supervised classifier
+    against the true labels (y_test).
+    
+    Args:
+        y_train (pd.Series): NOT USED for fitting, but kept for API consistency.
+    """
+    
+    model_name = type(model).__name__
+    logging.info(f"Starting UNSUPERVISED model training: {model_name}...")
+
+    # 1. Training (CÍMKÉK NÉLKÜL)
+    try:
+        model.fit(X_train) # Figyelem: Nincs y_train!
+        logging.info(f"{model_name} training finished.")
+    except Exception as e:
+        logging.error(f"Error while training unsupervised model: {model_name}: {e}")
+        return model, {"error": str(e)}
+
+    # 2. Prediction
+    logging.info("Prediction on test dataset (unsupervised)")
+    y_pred_raw = model.predict(X_test) # Eredmény: [-1, 1]
+    
+    # 3. LEKÉPEZÉS: [-1, 1] -> [1, 0]
+    # Feltételezzük: y_test-ben 1=Fraud, 0=Normal
+    # Modell kimenete: -1=Outlier (Fraud), 1=Inlier (Normal)
+    y_pred_mapped = np.where(y_pred_raw == -1, 1, 0)
+    logging.debug("Mapped unsupervised predictions: -1 -> 1 (fraud), 1 -> 0 (normal).")
+
+    # 4. Pontszámok (AUC metrikákhoz)
+    y_proba_scores = None
+    # JAVÍTÁS: Ellenőrizzük, hogy kell-e BÁRMELYIK AUC metrika
+    proba_needed = any(metric in metrics_to_calc for metric in ['pr_auc', 'roc_auc'])
+
+    if proba_needed:
+        y_proba_scores = _get_unsupervised_scores(model, X_test)
+
+    # --- 5. Kiértékelés ---
+    logging.info("Metrikák számítása (unsupervised mapped)...")
+    metrics_results = _calculate_metrics(
+        y_test, 
+        y_pred_mapped,   # A leképezett 0/1 jóslatok
+        y_proba_scores,  # Az anomália-pontszámok
+        metrics_to_calc
+    )
+    
+    # --- 6. Visszatérés ---
     return model, metrics_results

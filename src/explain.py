@@ -50,7 +50,7 @@ def generate_shap_values(
         
         if model_type in TREE_BASED_MODELS:
             logging.debug("SHAP: Using TreeExplainer.")
-            explainer = shap.TreeExplainer(model, X_background)
+            explainer = shap.TreeExplainer(model, X_train_full, model_output="probability")
         
         elif model_type == 'LogisticRegression':
             logging.debug("SHAP: Using LinearExplainer.")
@@ -67,10 +67,45 @@ def generate_shap_values(
         shap_values_obj = explainer(X_to_explain)
         logging.info("SHAP calculation finished.")
 
-        # ... (A kódod többi része a plotolásról és mentésről)
-        # Győződj meg róla, hogy a plotolás és mentés 'X_to_explain'-t használja
+        # 1. Summary Plot (Beeswarm) mentése
+        # Ez a leggyakoribb globális magyarázat
+        try:
+            logging.info("Generating SHAP beeswarm plot...")
+            plt.figure() # Fontos, hogy tiszta ábrát kezdjünk
+            shap.summary_plot(
+                shap_values_obj, 
+                X_to_explain, 
+                plot_type="beeswarm", 
+                show=False
+            )
+            plot_filename = save_path / f"{model_name}_shap_beeswarm.png"
+            plt.savefig(plot_filename, bbox_inches='tight')
+            plt.close() # Zárd be az ábrát, hogy ne szemetelje tele a memóriát
+            logging.info(f"SHAP beeswarm plot saved to {plot_filename}")
+
+        except Exception as e:
+            logging.warning(f"Could not generate SHAP beeswarm plot: {e}")
+
+        # 2. Bar Plot (feature importance) mentése
+        try:
+            logging.info("Generating SHAP bar plot...")
+            plt.figure()
+            # Figyelem: A 'shap_values_obj' struktúrája függhet a modelltől
+            # (pl. binárisnál lehet, hogy shap_values_obj[:,:,1]-et kell használnod)
+            # Tegyük fel, hogy a shap_values_obj a "pozitív" osztályra vonatkozik
+            shap.summary_plot(
+                shap_values_obj, 
+                X_to_explain, 
+                plot_type="bar", 
+                show=False
+            )
+            plot_filename = save_path / f"{model_name}_shap_bar.png"
+            plt.savefig(plot_filename, bbox_inches='tight')
+            plt.close()
+            logging.info(f"SHAP bar plot saved to {plot_filename}")
         
-        # ... (pl. shap_df = pd.DataFrame(shap_values_for_csv, columns=X_to_explain.columns))
+        except Exception as e:
+            logging.warning(f"Could not generate SHAP bar plot: {e}")
 
     except Exception as e:
         logging.error(f"Hiba a SHAP magyarázat generálása során ({model_name}): {e}", exc_info=True)

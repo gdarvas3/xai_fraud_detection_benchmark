@@ -67,16 +67,28 @@ def run_benchmark():
             params = config.MODEL_CONFIGS.get(model_name, {})
             model = models.get_model(model_name, params)
 
-            # 3.2 Train and Evaluate
-            logging.info("Training and evaluating...")
-            trained_model, metrics = training.train_and_evaluate(
-                model=model,
-                X_train=X_train,
-                y_train=y_train,
-                X_test=X_test,
-                y_test=y_test,
-                metrics_to_calc=config.METRICS
-            )
+            # Unsupervised model training
+            if(model_name in config.SUPERVISED_MODELS):
+                # 3.2 Train and Evaluate
+                logging.info("Training and evaluating (supervised)...")
+                trained_model, metrics = training.train_and_evaluate_supervised(
+                    model=model,
+                    X_train=X_train,
+                    y_train=y_train,
+                    X_test=X_test,
+                    y_test=y_test,
+                    metrics_to_calc=config.METRICS
+                )
+            elif (model_name in config.UNSUPERVISED_MODELS):
+                logging.info("Training and evaluating (supervised)...")
+                trained_model, metrics = training.train_and_evaluate_unsupervised(
+                    model=model,
+                    X_train=X_train,
+                    y_train=y_train,
+                    X_test=X_test,
+                    y_test=y_test,
+                    metrics_to_calc=config.METRICS
+                )
             
             all_metrics[model_name] = metrics
             logging.info(f"Results ({model_name}): {metrics}")
@@ -97,6 +109,17 @@ def run_benchmark():
                     save_path=config.EXPLANATIONS_SHAP_PATH
                 )
                 logging.info(f"SHAP magyarázat elmentve.")
+            if config.RUN_LIME:
+                logging.info(f"LIME magyarázat generálása ({model_name})...")
+                explain.generate_lime_explanation(
+                    model=trained_model,
+                    X_train=X_train,
+                    X_test = X_test,
+                    instance_index=123,
+                    model_name=model_name,
+                    save_path=config.EXPLANATIONS_LIME_PATH
+                )
+                logging.info(f"LIME magyarázat elmentve.")
 
         except Exception as e:
             logging.error(f"Error with model: {model_name}: {e}")
