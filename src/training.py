@@ -17,10 +17,12 @@ from sklearn.metrics import (
 
 from sklearn.base import BaseEstimator
 
+# --- Type Hint Definitions ---
 Model = BaseEstimator
 MetricsDict = Dict[str, float]
 
 
+# --- Helper Function: Metric Calculation ---
 def _calculate_metrics(
     y_true: Union[pd.Series, np.ndarray],
     y_pred: Union[pd.Series, np.ndarray],
@@ -32,7 +34,7 @@ def _calculate_metrics(
     """
     results = {}
     
-    # Using 'Weighted' average
+    # Use 'weighted' average for metrics to account for class imbalance
     avg_method = 'weighted' 
     
     for metric_name in metrics_to_calc:
@@ -51,24 +53,25 @@ def _calculate_metrics(
             
             elif metric_name == 'roc_auc':
                 if y_proba is None:
-                    logging.warning(f"Can not calculate ROC-AUC pred_proba is missing")
+                    logging.warning(f"Cannot calculate ROC-AUC: pred_proba is missing")
                     results[metric_name] = None
                 else:
-                    # Kétosztályos esetben a y_proba (n_samples,) alakú
+                    # Handle binary (1D) vs. multiclass (2D) proba arrays
                     if len(y_proba.shape) == 1: 
                         results[metric_name] = roc_auc_score(y_true, y_proba)
-                    # Többosztályos esetben (n_samples, n_classes)
                     else:
                         results[metric_name] = roc_auc_score(y_true, y_proba, multi_class='ovr', average=avg_method)
             
             elif metric_name == 'pr_auc':
                 if y_proba is None:
-                    logging.warning(f"Can not calculate PR-AUC pred_proba is missing")
+                    logging.warning(f"Cannot calculate PR-AUC: pred_proba is missing")
                     results[metric_name] = None
                 else:
+                    # Note: average_precision_score is for binary or multilabel
+                    # For PR-AUC, we typically use the positive class probability (1D array)
                     results[metric_name] = average_precision_score(y_true, y_proba)
             else:
-                logging.warning(f"Unkonwn metric: '{metric_name}'")
+                logging.warning(f"Unknown metric: '{metric_name}'")
                 
         except Exception as e:
             logging.error(f"Error while calculating: {metric_name} : {e}")
@@ -76,34 +79,36 @@ def _calculate_metrics(
             
     return results
 
+# --- Helper Function: Unsupervised Scoring ---
 def _get_unsupervised_scores(
     model: Model, 
     X_test: pd.DataFrame
 ) -> Union[np.ndarray, None]:
     """
-    Lekéri az anomália pontszámokat (decision_function vagy score_samples).
-    Mindig úgy adja vissza, hogy a MAGASABB érték jelentse az anomáliát.
+    Gets anomaly scores (decision_function or score_samples).
+    Always returns scores where a HIGHER value means more anomalous.
     """
+    # 1. Use decision_function (e.g., IsolationForest, OneClassSVM)
     if hasattr(model, "decision_function"):
-        # A legtöbb modell (pl. IsolationForest, OneClassSVM) 
-        # decision_function-t ad, ahol az ALACSONYABB pontszám az anomália.
-        # Ezért megfordítjuk (negáljuk), hogy a magasabb legyen a rosszabb.
+        # Most models output LOWER scores for anomalies, so we negate.
         logging.debug("Using -decision_function() for scores.")
         return -model.decision_function(X_test)
         
+    # 2. Use score_samples (e.g., LocalOutlierFactor)
     elif hasattr(model, "score_samples"):
-        # Pl. LocalOutlierFactor (novelty=True)
-        # Itt a score_samples a "normalitás" mértéke (magasabb a jobb),
-        # tehát szintén negálni kell.
+        # LOF's score_samples is a measure of normality (higher=more normal), 
+        # so we negate it to get an anomaly score.
         logging.debug("Using -score_samples() for scores.")
         return -model.score_samples(X_test)
         
+    # 3. Handle models without scoring
     else:
         logging.warning(f"Model {type(model).__name__} has no decision_function or score_samples. "
                         "PR-AUC and ROC-AUC will be unavailable.")
         return None
 
 
+# --- Main Function 1: Supervised Workflow ---
 def train_and_evaluate_supervised(
     model: Model,
     X_train: pd.DataFrame,
@@ -113,121 +118,101 @@ def train_and_evaluate_supervised(
     metrics_to_calc: List[str]
 ) -> Tuple[Model, MetricsDict]:
     """
-    Train and evaluate a single model
-
-    Args:
-        model (Model): Scikit-learn compatible model
-        X_train (pd.DataFrame): Train dataset (features)
-        y_train (pd.Series): Train dataset (labels)
-        X_test (pd.DataFrame): Test dataset (features)
-        y_test (pd.Series): Test dataset (labels)
-        metrics_to_calc (List[str]): List of metrics to be calculated
-
-    Returns:
-        Tuple[Model, MetricsDict]: 
-            1. Trained model object
-            2. Dict with calculated metrics
+    Trains and evaluates a single SUPERVISED model.
     """
     
     model_name = type(model).__name__
     logging.info(f"Starting model training: {model_name}...")
 
-    # 1. Training
+    # 1. Train the model
     try:
         model.fit(X_train, y_train)
         logging.info(f"{model_name} training finished.")
     except Exception as e:
         logging.error(f"Error while training model: {model_name}: {e}")
-        # Visszaadunk egy üres eredményt és a nem tanított modellt
         return model, {"error": str(e)}
 
-    # 2. Prediction
-    logging.info("Prediction on test dataset")
+    # 2. Generate predictions
+    logging.info("Generating predictions on test dataset...")
     y_pred = model.predict(X_test)
     
-    # Generating prediction probabilities (if supported by model)
+    # 3. Generate prediction probabilities (if needed for metrics)
     y_proba = None
-    if 'pr_auc' in metrics_to_calc:
+    proba_needed = any(metric in metrics_to_calc for metric in ['pr_auc', 'roc_auc'])
+    
+    if proba_needed:
         if hasattr(model, "predict_proba"):
             try:
-                # A [:, 1] a "pozitív" osztály valószínűségét adja (bináris esetben)
-                # Többosztályos esetben a teljes (n_samples, n_classes) tömböt
                 y_proba_full = model.predict_proba(X_test)
                 
+                # For binary classification, use the probability of the positive class (class 1)
                 if len(y_proba_full.shape) == 2 and y_proba_full.shape[1] == 2:
-                    # Klasszikus bináris eset
                     y_proba = y_proba_full[:, 1]
                 else:
-                    # Többosztályos eset (vagy regresszió, bár itt nem)
+                    # Fallback for multiclass
                     y_proba = y_proba_full
 
             except Exception as e:
-                logging.warning(f"Hiba a 'predict_proba' hívása során: {e}")
+                logging.warning(f"Error calling 'predict_proba': {e}")
         else:
-            logging.warning(f"A(z) {model_name} modell nem rendelkezik 'predict_proba' metódussal. ROC AUC nem számítható.")
+            logging.warning(f"Model {model_name} lacks 'predict_proba' method. AUC metrics unavailable.")
 
-    # --- 3. Kiértékelés ---
-    logging.info("Metrikák számítása...")
+    # 4. Calculate metrics
+    logging.info("Calculating metrics...")
     metrics_results = _calculate_metrics(y_test, y_pred, y_proba, metrics_to_calc)
     
-    # --- 4. Visszatérés ---
-    # Visszaadjuk a már tanított modellt és a metrikákat
+    # 5. Return trained model and results
     return model, metrics_results
 
+# --- Main Function 2: Unsupervised Workflow ---
 def train_and_evaluate_unsupervised(
     model: Model,
     X_train: pd.DataFrame,
-    y_train: pd.Series,  # Ezt az argumentumot fogadja, de NEM HASZNÁLJA!
+    y_train: pd.Series, # Not used for training, but kept for API consistency
     X_test: pd.DataFrame,
     y_test: pd.Series,
     metrics_to_calc: List[str]
 ) -> Tuple[Model, MetricsDict]:
     """
-    Train and evaluate an UNSUPERVISED anomaly detection model.
-    It evaluates the model as if it were a supervised classifier
-    against the true labels (y_test).
-    
-    Args:
-        y_train (pd.Series): NOT USED for fitting, but kept for API consistency.
+    Trains and evaluates an UNSUPERVISED anomaly detection model.
     """
     
     model_name = type(model).__name__
     logging.info(f"Starting UNSUPERVISED model training: {model_name}...")
 
-    # 1. Training (CÍMKÉK NÉLKÜL)
+    # 1. Train the model (without labels)
     try:
-        model.fit(X_train) # Figyelem: Nincs y_train!
+        model.fit(X_train) # Note: y_train is NOT used
         logging.info(f"{model_name} training finished.")
     except Exception as e:
         logging.error(f"Error while training unsupervised model: {model_name}: {e}")
         return model, {"error": str(e)}
 
-    # 2. Prediction
-    logging.info("Prediction on test dataset (unsupervised)")
-    y_pred_raw = model.predict(X_test) # Eredmény: [-1, 1]
+    # 2. Generate predictions
+    logging.info("Generating predictions on test dataset (unsupervised)...")
+    y_pred_raw = model.predict(X_test) # Output is typically [-1, 1]
     
-    # 3. LEKÉPEZÉS: [-1, 1] -> [1, 0]
-    # Feltételezzük: y_test-ben 1=Fraud, 0=Normal
-    # Modell kimenete: -1=Outlier (Fraud), 1=Inlier (Normal)
+    # 3. Map predictions to standard [0, 1] format
+    # Assumes y_test: 1=Fraud, 0=Normal
+    # Assumes model: -1=Outlier (Fraud), 1=Inlier (Normal)
     y_pred_mapped = np.where(y_pred_raw == -1, 1, 0)
     logging.debug("Mapped unsupervised predictions: -1 -> 1 (fraud), 1 -> 0 (normal).")
 
-    # 4. Pontszámok (AUC metrikákhoz)
+    # 4. Get anomaly scores (for AUC metrics)
     y_proba_scores = None
-    # JAVÍTÁS: Ellenőrizzük, hogy kell-e BÁRMELYIK AUC metrika
     proba_needed = any(metric in metrics_to_calc for metric in ['pr_auc', 'roc_auc'])
 
     if proba_needed:
         y_proba_scores = _get_unsupervised_scores(model, X_test)
 
-    # --- 5. Kiértékelés ---
-    logging.info("Metrikák számítása (unsupervised mapped)...")
+    # 5. Calculate metrics using mapped predictions and scores
+    logging.info("Calculating metrics (unsupervised mapped)...")
     metrics_results = _calculate_metrics(
         y_test, 
-        y_pred_mapped,   # A leképezett 0/1 jóslatok
-        y_proba_scores,  # Az anomália-pontszámok
+        y_pred_mapped,  # The mapped 0/1 predictions
+        y_proba_scores, # The standardized anomaly scores
         metrics_to_calc
     )
     
-    # --- 6. Visszatérés ---
+    # 6. Return trained model and results
     return model, metrics_results

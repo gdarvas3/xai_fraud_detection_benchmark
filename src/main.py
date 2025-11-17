@@ -22,6 +22,9 @@ logging.basicConfig(
     ]
 )
 
+shap_logger = logging.getLogger('shap')
+shap_logger.setLevel(logging.WARNING)
+
 def run_benchmark():
     """
     Main function to run the benchmarking

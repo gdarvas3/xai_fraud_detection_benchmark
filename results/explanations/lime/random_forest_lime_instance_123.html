@@ -37089,25 +37089,25 @@
 /***/ })
 /******/ ]);
 //# sourceMappingURL=bundle.js.map </script></head><body>
-        <div class="lime top_div" id="top_divAHF5TF4E8LM2CJQ"></div>
+        <div class="lime top_div" id="top_div015KP5QL9S3CGWL"></div>
         
         <script>
-        var top_div = d3.select('#top_divAHF5TF4E8LM2CJQ').classed('lime top_div', true);
+        var top_div = d3.select('#top_div015KP5QL9S3CGWL').classed('lime top_div', true);
         
             var pp_div = top_div.append('div')
                                 .classed('lime predict_proba', true);
             var pp_svg = pp_div.append('svg').style('width', '100%');
-            var pp = new lime.PredictProba(pp_svg, ["class_0", "class_1"], [0.9861409977865793, 0.01385900221342072]);
+            var pp = new lime.PredictProba(pp_svg, ["class_0", "class_1"], [0.9831124779091911, 0.016887522090809005]);
             
         
         var exp_div;
             var exp = new lime.Explanation(["class_0", "class_1"]);
         
                 exp_div = top_div.append('div').classed('lime explanation', true);
-                exp.show([["V189 <= -0.03", -0.04644964460404661], ["V195 <= 0.05", -0.03950604661486525], ["V149 <= 0.15", -0.038773306322523016], ["V187 <= -0.04", -0.03294023857448528], ["R_emaildomain_prodigy.net.mx <= 0.00", -0.030820326374187315], ["P_emaildomain_yahoo.co.uk <= 0.00", 0.029435491611021276], ["R_emaildomain_sbcglobal.net <= 0.00", 0.029303277027069505], ["R_emaildomain_protonmail.com <= 0.00", -0.024163223085569785], ["P_emaildomain_frontiernet.net <= 0.00", -0.015135957754706959], ["P_emaildomain_q.com <= 0.00", -0.0026175990460987728]], 1, exp_div);
+                exp.show([["V200 <= -0.05", -0.06313910902734347], ["C12 <= -0.05", -0.061499656626628506], ["P_emaildomain_embarqmail.com <= 0.00", -0.04744577912463911], ["V188 <= -0.01", -0.0406273944383454], ["V156 <= 0.12", -0.03652775722871405], ["V27 <= -0.03", 0.031927923785106095], ["P_emaildomain_live.fr <= 0.00", 0.02977825541280234], ["R_emaildomain_earthlink.net <= 0.00", -0.026420169452351237], ["R_emaildomain_sc.rr.com <= 0.00", 0.013059874230325345], ["R_emaildomain_rocketmail.com <= 0.00", 0.010017434671497193]], 1, exp_div);
                 
         var raw_div = top_div.append('div');
-            exp.show_raw_tabular([["V189", "-0.03", -0.04644964460404661], ["V195", "0.05", -0.03950604661486525], ["V149", "0.15", -0.038773306322523016], ["V187", "-0.04", -0.03294023857448528], ["R_emaildomain_prodigy.net.mx", "0.00", -0.030820326374187315], ["P_emaildomain_yahoo.co.uk", "0.00", 0.029435491611021276], ["R_emaildomain_sbcglobal.net", "0.00", 0.029303277027069505], ["R_emaildomain_protonmail.com", "0.00", -0.024163223085569785], ["P_emaildomain_frontiernet.net", "0.00", -0.015135957754706959], ["P_emaildomain_q.com", "0.00", -0.0026175990460987728]], 1, raw_div);
+            exp.show_raw_tabular([["V200", "-0.05", -0.06313910902734347], ["C12", "-0.05", -0.061499656626628506], ["P_emaildomain_embarqmail.com", "0.00", -0.04744577912463911], ["V188", "-0.01", -0.0406273944383454], ["V156", "0.12", -0.03652775722871405], ["V27", "-0.03", 0.031927923785106095], ["P_emaildomain_live.fr", "0.00", 0.02977825541280234], ["R_emaildomain_earthlink.net", "0.00", -0.026420169452351237], ["R_emaildomain_sc.rr.com", "0.00", 0.013059874230325345], ["R_emaildomain_rocketmail.com", "0.00", 0.010017434671497193]], 1, raw_div);
         
         </script>
         </body></html>
