@@ -45,7 +45,7 @@ def run_benchmark():
     # 2. Data preprocessing
     logging.info("Load and preprocess data...")
     try:
-        X_train, X_test, y_train, y_test = preprocessing.load_and_preprocess_data(
+        X_train_resampled, X_train_normal, X_test, y_train_resampled, y_test = preprocessing.load_and_preprocess_data(
             raw_data_path=config.RAW_DATA_PATH,
             processed_data_path=config.PROCESSED_DATA_PATH,
             test_size=config.TEST_SPLIT_SIZE,
@@ -76,8 +76,8 @@ def run_benchmark():
                 logging.info("Training and evaluating (supervised)...")
                 trained_model, metrics = training.train_and_evaluate_supervised(
                     model=model,
-                    X_train=X_train,
-                    y_train=y_train,
+                    X_train=X_train_resampled,
+                    y_train=y_train_resampled,
                     X_test=X_test,
                     y_test=y_test,
                     metrics_to_calc=config.METRICS
@@ -86,8 +86,7 @@ def run_benchmark():
                 logging.info("Training and evaluating (supervised)...")
                 trained_model, metrics = training.train_and_evaluate_unsupervised(
                     model=model,
-                    X_train=X_train,
-                    y_train=y_train,
+                    X_train=X_train_normal,
                     X_test=X_test,
                     y_test=y_test,
                     metrics_to_calc=config.METRICS

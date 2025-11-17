@@ -119,6 +119,7 @@ def train_and_evaluate_supervised(
 ) -> Tuple[Model, MetricsDict]:
     """
     Trains and evaluates a single SUPERVISED model.
+    
     """
     
     model_name = type(model).__name__

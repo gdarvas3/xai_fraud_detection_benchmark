@@ -2,6 +2,12 @@
 
 from pathlib import Path
 
+# Dataset data
+DATASET_ID = 'ieee_fraud_demo'
+TARGET_COLUMN = "isFraud" 
+ID_COLUMN = 'TransactionID'
+TIMESTAMP_COLUMN = 'TransactionDT'
+
 # --- Project Path Definitions ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = PROJECT_ROOT / "data"
@@ -12,8 +18,8 @@ RAW_DATA_PATH = DATA_PATH / "raw"
 PROCESSED_DATA_PATH = DATA_PATH / "processed"
 
 # Results & Output Paths
-EXPLANATIONS_SHAP_PATH = RESULTS_PATH / "explanations" / "shap"
-EXPLANATIONS_LIME_PATH = RESULTS_PATH / "explanations" / "lime"
+EXPLANATIONS_SHAP_PATH = RESULTS_PATH / "explanations" / "shap" / DATASET_ID
+EXPLANATIONS_LIME_PATH = RESULTS_PATH / "explanations" / "lime" / DATASET_ID
 METRICS_PATH = RESULTS_PATH / "metrics"
 PLOTS_PATH = RESULTS_PATH / "plots"
 MODELS_PATH = RESULTS_PATH / "models"

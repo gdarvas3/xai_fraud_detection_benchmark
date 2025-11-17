@@ -5,6 +5,7 @@ import numpy as np
 import logging
 from pathlib import Path
 from typing import Tuple, List
+from imblearn.over_sampling import SMOTE
 
 # Sklearn imports for pipeline
 from sklearn.model_selection import train_test_split
@@ -15,12 +16,13 @@ from sklearn.compose import ColumnTransformer
 
 # Local imports
 import utils
+import config
 
 # --- Data Configuration ---
-TARGET_COLUMN = "isFraud" 
-RAW_DATA_FILENAME = "ieee_fraud.csv" 
-ID_COLUMN = 'TransactionID'
-TIMESTAMP_COLUMN = 'TransactionDT'
+TARGET_COLUMN = config.TARGET_COLUMN
+RAW_DATA_FILENAME = f"{config.DATASET_ID}.csv"
+ID_COLUMN = config.ID_COLUMN
+TIMESTAMP_COLUMN = config.TIMESTAMP_COLUMN
 
 # --- Preprocessing Pipeline Helpers ---
 
@@ -109,91 +111,79 @@ def load_and_preprocess_data(
     test_size: float,
     random_state: int
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
-    """
-    Main function for the data processing workflow.
-    """
+    
     logging.info("Starting data preprocessing pipeline...")
     
-    # 1. Load raw data
-    try:
-        data_file = raw_data_path / RAW_DATA_FILENAME
-        df = pd.read_csv(data_file)
-        logging.info(f"Raw data loaded successfully from {data_file}")
-    except FileNotFoundError:
-        logging.error(f"Critical Error: Raw data file not found at {data_file}")
-        raise
-    except Exception as e:
-        logging.error(f"Error loading raw data: {e}")
-        raise
-
-    # 1.1. Validate target column
-    if TARGET_COLUMN not in df.columns:
-        logging.error(f"Critical Error: Target column '{TARGET_COLUMN}' not in DataFrame.")
-        raise ValueError(f"Target column '{TARGET_COLUMN}' does not exist.")
-
-    # 2. Feature Engineering
-
-    # 2.1. Drop useless ID columns
-    if ID_COLUMN in df.columns:
-        df = df.drop(columns=[ID_COLUMN])
-        logging.info(f"Dropped '{ID_COLUMN}' column.")
-
-    # 2.2. Create time-based features
-    if TIMESTAMP_COLUMN in df.columns:
-        df = _create_time_features(df) # Ez a függvény már eldobja a TIMESTAMP_COLUMN-t
-        logging.info(f"Created time features from '{TIMESTAMP_COLUMN}'.")
-
-    # 2.3. Separate features (X) and target (y)
+    # 1. Load raw data & 2. Feature Engineering (Ugyanaz, mint nálad)
+    # ... (Kódod 1-es és 2-es pontja változatlan) ...
+    # Feltételezzük, hogy itt már megvan az X és y
+    
+    # --- KÓDOD ELEJE ---
+    data_file = raw_data_path / RAW_DATA_FILENAME
+    df = pd.read_csv(data_file)
+    if TARGET_COLUMN not in df.columns: raise ValueError("No target")
+    if ID_COLUMN in df.columns: df = df.drop(columns=[ID_COLUMN])
+    if TIMESTAMP_COLUMN in df.columns: df = _create_time_features(df)
     y = df[TARGET_COLUMN]
     X = df.drop(columns=[TARGET_COLUMN])
+    # --- KÓDOD VÉGE ---
 
-    # 3. Split data into train and test sets (before any transformation)
-    # This is the most important step to prevent data leakage.
+    # 3. Split data (STRATIFIED - Nagyon fontos!)
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, 
-        test_size=test_size, 
-        random_state=random_state, 
-        stratify=y # Ensure class distribution is preserved
+        X, y, test_size=test_size, random_state=random_state, stratify=y
     )
-    logging.info(f"Data split into train/test. Train shape: {X_train.shape}, Test shape: {X_test.shape}")
-
-    # 4. Build the preprocessing pipeline
+    
+    # 4. Build & Fit Preprocessor
     numeric_features, categorical_features = _get_feature_types(X_train)
     preprocessor = _build_preprocessor(numeric_features, categorical_features)
 
-    # 5. Fit pipeline on training data and transform both sets
-    logging.info("Fitting preprocessor on training data...")
+    logging.info("Fitting preprocessor on ORIGINAL training data...")
     X_train_processed_np = preprocessor.fit_transform(X_train)
-    
-    logging.info("Transforming test data using fitted preprocessor...")
     X_test_processed_np = preprocessor.transform(X_test)
-
-    # 6. Save the fitted preprocessor object for future inference
-    preprocessor_path = processed_data_path / "preprocessor.pkl"
-    utils.save_pickle(preprocessor, preprocessor_path)
-    logging.info(f"Preprocessor object saved to: {preprocessor_path}")
-
-    # 7. Convert processed NumPy arrays back to DataFrames
-    # This is crucial for readability and for passing feature names to SHAP
-    new_column_names = _get_processed_column_names(preprocessor, numeric_features, categorical_features)
     
-    X_train_processed_df = pd.DataFrame(
-        X_train_processed_np, 
-        columns=new_column_names,
-        index=X_train.index
-    )
-    X_test_processed_df = pd.DataFrame(
-        X_test_processed_np, 
-        columns=new_column_names,
-        index=X_test.index
-    )
+    # Save preprocessor
+    utils.save_pickle(preprocessor, processed_data_path / "preprocessor.pkl")
+
+    # Reconstruct DataFrames (Oszlopnevek visszanyerése)
+    new_cols = _get_processed_column_names(preprocessor, numeric_features, categorical_features)
     
-    # 8. Save processed data sets to 'processed' folder
-    X_train_processed_df.to_csv(processed_data_path / "train_features.csv", index=False)
-    X_test_processed_df.to_csv(processed_data_path / "test_features.csv", index=False)
+    X_train_df = pd.DataFrame(X_train_processed_np, columns=new_cols) # Index reset miatt nem kell index=...
+    X_test_df = pd.DataFrame(X_test_processed_np, columns=new_cols) # Itt sem, mert numpy array lett
+    
+    # y indexek igazítása (Mivel a numpy array eldobta az indexet, reseteljük az y-t is)
+    y_train = y_train.reset_index(drop=True)
+    y_test = y_test.reset_index(drop=True)
+
+    # -------------------------------------------------------------------------
+    # 5. STRATÉGIÁK MEGVALÓSÍTÁSA
+    # -------------------------------------------------------------------------
+
+    # A) STANDARD MENTÉS (Baseline)
+    logging.info("Saving STANDARD datasets...")
+    X_train_df.to_csv(processed_data_path / "train_features.csv", index=False)
     y_train.to_csv(processed_data_path / "train_target.csv", index=False)
-    y_test.to_csv(processed_data_path / "test_target.csv", index=False)
-    logging.info(f"Processed data sets saved to '{processed_data_path}'")
+
+    # B) SUPERVISED STRATÉGIA: SMOTE (Kiegyensúlyozás)
+    logging.info("Applying SMOTE for balanced dataset...")
+    smote = SMOTE(random_state=random_state)
+    X_train_resampled, y_train_resampled = smote.fit_resample(X_train_df, y_train)
     
-    # 9. Return processed data for use in the main training pipeline
-    return X_train_processed_df, X_test_processed_df, y_train, y_test
+    X_train_resampled.to_csv(processed_data_path / "train_features_balanced.csv", index=False)
+    y_train_resampled.to_csv(processed_data_path / "train_target_balanced.csv", index=False)
+    logging.info(f"Balanced dataset saved. Size: {X_train_resampled.shape}")
+
+    # C) UNSUPERVISED STRATÉGIA: Csak a normális adatok
+    logging.info("Filtering for Normal-Only dataset (Unsupervised)...")
+    # Csak a 0-ás címkéjű sorokat tartjuk meg
+    X_train_normal = X_train_df[y_train == 0]
+    
+    X_train_normal.to_csv(processed_data_path / "train_features_normal.csv", index=False)
+    # Unsupervisedhez elvileg nem kell target, de validációhoz elmenthetjük, bár mind 0 lesz.
+    logging.info(f"Normal-only dataset saved. Size: {X_train_normal.shape}")
+
+    # 6. A TESZT HALMAZ MENTÉSE (KÖZÖS PONT!)
+    logging.info("Saving COMMON TEST datasets...")
+    X_test_df.to_csv(processed_data_path / "test_features.csv", index=False)
+    y_test.to_csv(processed_data_path / "test_target.csv", index=False)
+
+    return X_train_resampled, X_train_normal, X_test, y_train_resampled, y_test
