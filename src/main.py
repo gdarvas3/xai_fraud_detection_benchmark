@@ -17,7 +17,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("benchmark.log"),
+        logging.FileHandler("benchmark.log", mode='w'),
         logging.StreamHandler()
     ]
 )
@@ -45,13 +45,14 @@ def run_benchmark():
     # 2. Data preprocessing
     logging.info("Load and preprocess data...")
     try:
-        X_train_resampled, X_train_normal, X_test, y_train_resampled, y_test = preprocessing.load_and_preprocess_data(
+        X_train, X_calib, X_test, X_train_normal, y_train, y_calib, y_test = preprocessing.load_and_preprocess_data(
             raw_data_path=config.RAW_DATA_PATH,
             processed_data_path=config.PROCESSED_DATA_PATH,
             test_size=config.TEST_SPLIT_SIZE,
+            calibration_size=config.CALIBRATION_SPLIT_SIZE,
             random_state=config.RANDOM_STATE
         )
-        logging.info(f"Successfuly loaded data. Train size: {X_train.shape}, Test size: {X_test.shape}")
+        logging.info(f"Successfuly loaded data.")
     except Exception as e:
         logging.error(f"Error during data loading: {e}")
         return
@@ -76,11 +77,14 @@ def run_benchmark():
                 logging.info("Training and evaluating (supervised)...")
                 trained_model, metrics = training.train_and_evaluate_supervised(
                     model=model,
-                    X_train=X_train_resampled,
-                    y_train=y_train_resampled,
+                    X_train=X_train,
+                    y_train=y_train,
+                    X_calib=X_calib,
+                    y_calib=y_calib,
                     X_test=X_test,
                     y_test=y_test,
-                    metrics_to_calc=config.METRICS
+                    metrics_to_calc=config.METRICS,
+                    alpha=0.1
                 )
             elif (model_name in config.UNSUPERVISED_MODELS):
                 logging.info("Training and evaluating (supervised)...")
@@ -100,28 +104,21 @@ def run_benchmark():
             utils.save_pickle(trained_model, model_save_path)
             logging.info(f"Model saved to: {model_save_path}")
 
+            if model_name in config.UNSUPERVISED_MODELS:
+                X_train_full = X_train
+            elif model_name in config.SUPERVISED_MODELS:
+                X_train_full = X_train_normal
+
             # 3.4 Generate explanation
-            if config.RUN_SHAP:
-                logging.info(f"SHAP magyarázat generálása ({model_name})...")
-                explain.generate_shap_values(
-                    model=trained_model,
-                    X_train_full=X_train,
-                    X_to_explain = X_test,
-                    model_name=model_name,
-                    save_path=config.EXPLANATIONS_SHAP_PATH
-                )
-                logging.info(f"SHAP magyarázat elmentve.")
-            if config.RUN_LIME:
-                logging.info(f"LIME magyarázat generálása ({model_name})...")
-                explain.generate_lime_explanation(
-                    model=trained_model,
+            explain.run_xai_pipeline(
+                    model=model,
                     X_train=X_train,
-                    X_test = X_test,
-                    instance_index=123,
+                    X_test=X_test,
+                    y_test=y_test,
                     model_name=model_name,
-                    save_path=config.EXPLANATIONS_LIME_PATH
+                    results_path_shap=config.EXPLANATIONS_SHAP_PATH,
+                    results_path_lime=config.EXPLANATIONS_LIME_PATH
                 )
-                logging.info(f"LIME magyarázat elmentve.")
 
         except Exception as e:
             logging.error(f"Error with model: {model_name}: {e}")
@@ -131,7 +128,7 @@ def run_benchmark():
     logging.info("Benchmarking finished. Saving results...")
 
     try:
-        metrics_save_path = Path(config.RESULTS_PATH) / "benchmark_summary.json"
+        metrics_save_path = Path(config.RESULTS_PATH) / f"benchmark_summary_{config.DATASET_ID}.json"
         utils.save_json(all_metrics, metrics_save_path)
         logging.info(f"Metrics summary saved to: {metrics_save_path}")
 

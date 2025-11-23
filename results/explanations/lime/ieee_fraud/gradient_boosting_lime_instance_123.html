@@ -37089,25 +37089,25 @@
 /***/ })
 /******/ ]);
 //# sourceMappingURL=bundle.js.map </script></head><body>
-        <div class="lime top_div" id="top_divNSU9MW5Z4ICPHSG"></div>
+        <div class="lime top_div" id="top_div01DO1JPX0WLS3WL"></div>
         
         <script>
-        var top_div = d3.select('#top_divNSU9MW5Z4ICPHSG').classed('lime top_div', true);
+        var top_div = d3.select('#top_div01DO1JPX0WLS3WL').classed('lime top_div', true);
         
             var pp_div = top_div.append('div')
                                 .classed('lime predict_proba', true);
             var pp_svg = pp_div.append('svg').style('width', '100%');
-            var pp = new lime.PredictProba(pp_svg, ["class_0", "class_1"], [0.9852914810180664, 0.014708519913256168]);
+            var pp = new lime.PredictProba(pp_svg, ["Normal", "Fraud"], [0.9515932202339172, 0.04840679094195366]);
             
         
         var exp_div;
-            var exp = new lime.Explanation(["class_0", "class_1"]);
+            var exp = new lime.Explanation(["Normal", "Fraud"]);
         
                 exp_div = top_div.append('div').classed('lime explanation', true);
-                exp.show([["V27 <= -0.03", -0.24070665804924907], ["V241 <= -0.01", -0.21686330761332326], ["TransactionAmt > -0.04", 0.19325539309643364], ["R_emaildomain_aim.com <= 0.00", 0.11099410755462503], ["R_emaildomain_mail.com <= 0.00", -0.09990034454896154], ["P_emaildomain_prodigy.net.mx <= 0.00", 0.08407229926229975], ["R_emaildomain_hotmail.es <= 0.00", -0.06608146053750047], ["P_emaildomain_yahoo.de <= 0.00", 0.06373421043455894], ["R_emaildomain_gmail <= 0.00", 0.04893620845268448], ["R_emaildomain_servicios-ta.com <= 0.00", 0.02174679071733881]], 1, exp_div);
+                exp.show([["num__V91 > 1.19", -0.008217835754089619], ["num__V197 <= 0.07", 0.007778264297672626], ["num__V297 > -0.14", -0.004729562386888092], ["num__V104 > -0.13", -0.004612583583562002], ["num__V319 > -0.05", -0.004552049484811712], ["num__C3 <= -0.04", 0.00437718712866229], ["num__V137 > -0.08", -0.00432613023169326], ["num__V106 > -0.09", -0.003926727042215031], ["num__V135 > -0.06", -0.0038155032420778856], ["num__V255 <= 0.11", -0.0021216791768605948]], 1, exp_div);
                 
         var raw_div = top_div.append('div');
-            exp.show_raw_tabular([["V27", "-0.03", -0.24070665804924907], ["V241", "-0.01", -0.21686330761332326], ["TransactionAmt", "0.42", 0.19325539309643364], ["R_emaildomain_aim.com", "0.00", 0.11099410755462503], ["R_emaildomain_mail.com", "0.00", -0.09990034454896154], ["P_emaildomain_prodigy.net.mx", "0.00", 0.08407229926229975], ["R_emaildomain_hotmail.es", "0.00", -0.06608146053750047], ["P_emaildomain_yahoo.de", "0.00", 0.06373421043455894], ["R_emaildomain_gmail", "0.00", 0.04893620845268448], ["R_emaildomain_servicios-ta.com", "0.00", 0.02174679071733881]], 1, raw_div);
+            exp.show_raw_tabular([["num__V91", "3.05", -0.008217835754089619], ["num__V197", "0.07", 0.007778264297672626], ["num__V297", "3.03", -0.004729562386888092], ["num__V104", "2.95", -0.004612583583562002], ["num__V319", "1.30", -0.004552049484811712], ["num__C3", "-0.04", 0.00437718712866229], ["num__V137", "1.27", -0.00432613023169326], ["num__V106", "1.00", -0.003926727042215031], ["num__V135", "1.53", -0.0038155032420778856], ["num__V255", "0.11", -0.0021216791768605948]], 1, raw_div);
         
         </script>
         </body></html>

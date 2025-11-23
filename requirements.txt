@@ -12,3 +12,9 @@ xgboost
 # Explanation
 shap
 lime
+
+# Sampling
+imblearn
+
+# Conformal prediction
+mapie==0.9.2

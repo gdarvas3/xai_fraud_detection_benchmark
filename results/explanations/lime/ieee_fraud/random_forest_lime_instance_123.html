@@ -37089,25 +37089,25 @@
 /***/ })
 /******/ ]);
 //# sourceMappingURL=bundle.js.map </script></head><body>
-        <div class="lime top_div" id="top_div015KP5QL9S3CGWL"></div>
+        <div class="lime top_div" id="top_div3BU6LVY01POCGUI"></div>
         
         <script>
-        var top_div = d3.select('#top_div015KP5QL9S3CGWL').classed('lime top_div', true);
+        var top_div = d3.select('#top_div3BU6LVY01POCGUI').classed('lime top_div', true);
         
             var pp_div = top_div.append('div')
                                 .classed('lime predict_proba', true);
             var pp_svg = pp_div.append('svg').style('width', '100%');
-            var pp = new lime.PredictProba(pp_svg, ["class_0", "class_1"], [0.9831124779091911, 0.016887522090809005]);
+            var pp = new lime.PredictProba(pp_svg, ["Normal", "Fraud"], [0.8277142060483688, 0.17228579395163154]);
             
         
         var exp_div;
-            var exp = new lime.Explanation(["class_0", "class_1"]);
+            var exp = new lime.Explanation(["Normal", "Fraud"]);
         
                 exp_div = top_div.append('div').classed('lime explanation', true);
-                exp.show([["V200 <= -0.05", -0.06313910902734347], ["C12 <= -0.05", -0.061499656626628506], ["P_emaildomain_embarqmail.com <= 0.00", -0.04744577912463911], ["V188 <= -0.01", -0.0406273944383454], ["V156 <= 0.12", -0.03652775722871405], ["V27 <= -0.03", 0.031927923785106095], ["P_emaildomain_live.fr <= 0.00", 0.02977825541280234], ["R_emaildomain_earthlink.net <= 0.00", -0.026420169452351237], ["R_emaildomain_sc.rr.com <= 0.00", 0.013059874230325345], ["R_emaildomain_rocketmail.com <= 0.00", 0.010017434671497193]], 1, exp_div);
+                exp.show([["cat__P_emaildomain_infrequent_sklearn <= 0.00", 0.035265777112292354], ["cat__P_emaildomain_anonymous.com <= 0.00", 0.027717595648145642], ["num__V333 <= -0.05", 0.026641556831688364], ["num__V219 <= -0.05", 0.025902352365553154], ["num__V148 <= 0.15", -0.024928355725351913], ["num__V293 <= -0.05", 0.024156642239351305], ["num__V322 <= -0.04", 0.02406537253820913], ["num__C1 <= -0.10", -0.023163832246465375], ["num__V68 <= -0.02", -0.018835372647184667], ["num__V195 <= 0.06", -0.013730549536190134]], 1, exp_div);
                 
         var raw_div = top_div.append('div');
-            exp.show_raw_tabular([["V200", "-0.05", -0.06313910902734347], ["C12", "-0.05", -0.061499656626628506], ["P_emaildomain_embarqmail.com", "0.00", -0.04744577912463911], ["V188", "-0.01", -0.0406273944383454], ["V156", "0.12", -0.03652775722871405], ["V27", "-0.03", 0.031927923785106095], ["P_emaildomain_live.fr", "0.00", 0.02977825541280234], ["R_emaildomain_earthlink.net", "0.00", -0.026420169452351237], ["R_emaildomain_sc.rr.com", "0.00", 0.013059874230325345], ["R_emaildomain_rocketmail.com", "0.00", 0.010017434671497193]], 1, raw_div);
+            exp.show_raw_tabular([["cat__P_emaildomain_infrequent_sklearn", "0.00", 0.035265777112292354], ["cat__P_emaildomain_anonymous.com", "0.00", 0.027717595648145642], ["num__V333", "-0.05", 0.026641556831688364], ["num__V219", "-0.05", 0.025902352365553154], ["num__V148", "0.15", -0.024928355725351913], ["num__V293", "-0.05", 0.024156642239351305], ["num__V322", "-0.04", 0.02406537253820913], ["num__C1", "-0.10", -0.023163832246465375], ["num__V68", "-0.02", -0.018835372647184667], ["num__V195", "0.06", -0.013730549536190134]], 1, raw_div);
         
         </script>
         </body></html>

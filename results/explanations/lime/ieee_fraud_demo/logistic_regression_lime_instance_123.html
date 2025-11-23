@@ -37089,25 +37089,25 @@
 /***/ })
 /******/ ]);
 //# sourceMappingURL=bundle.js.map </script></head><body>
-        <div class="lime top_div" id="top_divEIZAGGJ3UKJST3C"></div>
+        <div class="lime top_div" id="top_div2OHUSWKKX9XCVBX"></div>
         
         <script>
-        var top_div = d3.select('#top_divEIZAGGJ3UKJST3C').classed('lime top_div', true);
+        var top_div = d3.select('#top_div2OHUSWKKX9XCVBX').classed('lime top_div', true);
         
             var pp_div = top_div.append('div')
                                 .classed('lime predict_proba', true);
             var pp_svg = pp_div.append('svg').style('width', '100%');
-            var pp = new lime.PredictProba(pp_svg, ["class_0", "class_1"], [0.9916347390751886, 0.008365260924811345]);
+            var pp = new lime.PredictProba(pp_svg, ["Normal", "Fraud"], [0.9562530774851825, 0.04374692251481753]);
             
         
         var exp_div;
-            var exp = new lime.Explanation(["class_0", "class_1"]);
+            var exp = new lime.Explanation(["Normal", "Fraud"]);
         
                 exp_div = top_div.append('div').classed('lime explanation', true);
-                exp.show([["P_emaildomain_roadrunner.com <= 0.00", -0.35048260027242495], ["V117 <= -0.01", -0.33415027285192983], ["V193 <= -0.05", -0.32141009588385305], ["R_emaildomain_hotmail.fr <= 0.00", -0.27853898618236783], ["R_emaildomain_charter.net <= 0.00", -0.2213270893701423], ["V111 <= -0.03", -0.20515514848841218], ["R_emaildomain_att.net <= 0.00", 0.14065121780995746], ["V27 <= -0.02", 0.1330211919288777], ["V241 <= -0.01", 0.09837807235332173], ["R_emaildomain_servicios-ta.com <= 0.00", 0.09774411445747701]], 1, exp_div);
+                exp.show([["R_emaildomain_icloud.com <= 0.00", -0.37508512625056567], ["V198 <= 0.02", -0.32700353461824466], ["R_emaildomain_q.com <= 0.00", -0.3129548824238633], ["P_emaildomain_netzero.com <= 0.00", -0.3123857326201108], ["V195 <= 0.05", -0.3120640535929632], ["V28 <= -0.02", 0.27870532206658716], ["V118 <= -0.04", 0.27634380528885066], ["P_emaildomain_embarqmail.com <= 0.00", -0.23413186749757464], ["R_emaildomain_cox.net <= 0.00", 0.16372586366897968], ["V241 <= -0.01", 0.162113900063825]], 1, exp_div);
                 
         var raw_div = top_div.append('div');
-            exp.show_raw_tabular([["P_emaildomain_roadrunner.com", "0.00", -0.35048260027242495], ["V117", "-0.01", -0.33415027285192983], ["V193", "-0.05", -0.32141009588385305], ["R_emaildomain_hotmail.fr", "0.00", -0.27853898618236783], ["R_emaildomain_charter.net", "0.00", -0.2213270893701423], ["V111", "-0.03", -0.20515514848841218], ["R_emaildomain_att.net", "0.00", 0.14065121780995746], ["V27", "-0.02", 0.1330211919288777], ["V241", "-0.01", 0.09837807235332173], ["R_emaildomain_servicios-ta.com", "0.00", 0.09774411445747701]], 1, raw_div);
+            exp.show_raw_tabular([["R_emaildomain_icloud.com", "0.00", -0.37508512625056567], ["V198", "0.02", -0.32700353461824466], ["R_emaildomain_q.com", "0.00", -0.3129548824238633], ["P_emaildomain_netzero.com", "0.00", -0.3123857326201108], ["V195", "0.05", -0.3120640535929632], ["V28", "-0.02", 0.27870532206658716], ["V118", "-0.04", 0.27634380528885066], ["P_emaildomain_embarqmail.com", "0.00", -0.23413186749757464], ["R_emaildomain_cox.net", "0.00", 0.16372586366897968], ["V241", "-0.01", 0.162113900063825]], 1, raw_div);
         
         </script>
         </body></html>

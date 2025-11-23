@@ -2,11 +2,17 @@
 
 from pathlib import Path
 
-# Dataset data
-DATASET_ID = 'ieee_fraud_demo'
-TARGET_COLUMN = "isFraud" 
-ID_COLUMN = 'TransactionID'
-TIMESTAMP_COLUMN = 'TransactionDT'
+# # Dataset data - vehivle_loan
+# DATASET_ID = 'vehicle_loan'
+# TARGET_COLUMN = "LOAN_DEFAULT" 
+# COLS_TO_DROP =['UNIQUEID', 'DATE_OF_BIRTH']
+# TIMESTAMP_COLUMN = ''
+
+# Dataset data - vehivle_loan
+DATASET_ID = 'ulb_creditcard'
+TARGET_COLUMN = "Class" 
+COLS_TO_DROP =[]
+TIMESTAMP_COLUMN = 'Time'
 
 # --- Project Path Definitions ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -14,20 +20,22 @@ DATA_PATH = PROJECT_ROOT / "data"
 RESULTS_PATH = PROJECT_ROOT / "results"
 
 # Data I/O Paths
-RAW_DATA_PATH = DATA_PATH / "raw"
-PROCESSED_DATA_PATH = DATA_PATH / "processed"
+RAW_DATA_PATH = DATA_PATH / "raw" / DATASET_ID
+PROCESSED_DATA_PATH = DATA_PATH / "processed" / DATASET_ID
 
 # Results & Output Paths
 EXPLANATIONS_SHAP_PATH = RESULTS_PATH / "explanations" / "shap" / DATASET_ID
 EXPLANATIONS_LIME_PATH = RESULTS_PATH / "explanations" / "lime" / DATASET_ID
 METRICS_PATH = RESULTS_PATH / "metrics"
 PLOTS_PATH = RESULTS_PATH / "plots"
-MODELS_PATH = RESULTS_PATH / "models"
+MODELS_PATH = RESULTS_PATH / "models" / DATASET_ID
 
 
 # --- Experiment Hyperparameters ---
 TEST_SPLIT_SIZE = 0.2
+CALIBRATION_SPLIT_SIZE = 0.1
 RANDOM_STATE = 42
+CARDINALITY_THRESHOLD = 1000
 
 
 # --- Execution Toggles ---
@@ -39,7 +47,7 @@ RUN_LIME = True
 
 # Define which models to run
 SUPERVISED_MODELS = ['logistic_regression', 'random_forest', 'gradient_boosting', 'svc']
-UNSUPERVISED_MODELS = ['isolation_forest', 'ocsvm']
+UNSUPERVISED_MODELS = ['isolation_forest', 'ocsgd']
 MODELS_TO_RUN = SUPERVISED_MODELS + UNSUPERVISED_MODELS
 
 # Define which metrics to calculate
@@ -66,9 +74,6 @@ MODEL_CONFIGS = {
     },
     'svc': {
         'C': 1.0,
-        # 'kernel': 'linear',
-        # 'gamma': 'scale',
-        # 'probability': True,
         'random_state': 42
     },
 
@@ -82,7 +87,7 @@ MODEL_CONFIGS = {
         'contamination': 0.05,
         'random_state': 42
     },
-    'ocsvm': {
+    'ocsgd': {
         'nu': 0.05, 
         'learning_rate': 'adaptive',
         'eta0': 0.01,

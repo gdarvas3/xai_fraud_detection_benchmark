@@ -47,7 +47,7 @@ def get_model(model_name, params):
         return IsolationForest(**params)
     
     # Unsupervised: One-Class SVM
-    elif model_name == 'ocsvm':
+    elif model_name == 'ocsgd':
         return SGDOneClassSVM(**params)
     
     # Error handling for unknown model

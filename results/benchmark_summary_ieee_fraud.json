@@ -1,0 +1,57 @@
+{
+    "logistic_regression": {
+        "accuracy": 0.8210112778135266,
+        "f1_score": 0.8752323761652767,
+        "precision": 0.9587239621501196,
+        "recall": 0.8210112778135266,
+        "roc_auc": 0.8608238899326076,
+        "pr_auc": 0.4324358576367741,
+        "cp_coverage": 0.900844989331798,
+        "cp_avg_set_size": 1.204211399735835,
+        "cp_empty_set_ratio": 0.0,
+        "alpha": 0.1
+    },
+    "random_forest": {
+        "accuracy": 0.926804280827717,
+        "f1_score": 0.9408038773159467,
+        "precision": 0.9613561327474841,
+        "recall": 0.926804280827717,
+        "roc_auc": 0.8853070936439076,
+        "pr_auc": 0.494759224090473,
+        "cp_coverage": 0.9016154705862431,
+        "cp_avg_set_size": 0.9548633454126731,
+        "cp_empty_set_ratio": 0.04513665458732685,
+        "alpha": 0.1
+    },
+    "gradient_boosting": {
+        "accuracy": 0.9753022657228977,
+        "f1_score": 0.9717849756434309,
+        "precision": 0.9719672541729766,
+        "recall": 0.9753022657228977,
+        "roc_auc": 0.9076927051603498,
+        "pr_auc": 0.5764971189148563,
+        "cp_coverage": 0.898736749415789,
+        "cp_avg_set_size": 0.9090324110136485,
+        "cp_empty_set_ratio": 0.09096758898635147,
+        "alpha": 0.1
+    },
+    "svc": {
+        "error": "Unable to allocate 1.65 GiB for an array with shape (531885, 417) and data type float64"
+    },
+    "isolation_forest": {
+        "accuracy": 0.9288701866088664,
+        "f1_score": 0.9377341006885844,
+        "precision": 0.9482089839577026,
+        "recall": 0.9288701866088664,
+        "roc_auc": 0.7701030566945827,
+        "pr_auc": 0.13963238830755204
+    },
+    "ocsgd": {
+        "accuracy": 0.9201747553087005,
+        "f1_score": 0.9278197747580308,
+        "precision": 0.9358807339805543,
+        "recall": 0.9201747553087005,
+        "roc_auc": 0.562603512184549,
+        "pr_auc": 0.05468676081886449
+    }
+}

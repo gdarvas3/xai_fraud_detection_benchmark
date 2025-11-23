@@ -37089,25 +37089,25 @@
 /***/ })
 /******/ ]);
 //# sourceMappingURL=bundle.js.map </script></head><body>
-        <div class="lime top_div" id="top_divEIZAGGJ3UKJST3C"></div>
+        <div class="lime top_div" id="top_div2OHUSWKKX9XCVBX"></div>
         
         <script>
-        var top_div = d3.select('#top_divEIZAGGJ3UKJST3C').classed('lime top_div', true);
+        var top_div = d3.select('#top_div2OHUSWKKX9XCVBX').classed('lime top_div', true);
         
             var pp_div = top_div.append('div')
                                 .classed('lime predict_proba', true);
             var pp_svg = pp_div.append('svg').style('width', '100%');
-            var pp = new lime.PredictProba(pp_svg, ["class_0", "class_1"], [0.9916347390751886, 0.008365260924811345]);
+            var pp = new lime.PredictProba(pp_svg, ["Normal", "Fraud"], [0.846592757481264, 0.15340724251873603]);
             
         
         var exp_div;
-            var exp = new lime.Explanation(["class_0", "class_1"]);
+            var exp = new lime.Explanation(["Normal", "Fraud"]);
         
                 exp_div = top_div.append('div').classed('lime explanation', true);
-                exp.show([["P_emaildomain_roadrunner.com <= 0.00", -0.35048260027242495], ["V117 <= -0.01", -0.33415027285192983], ["V193 <= -0.05", -0.32141009588385305], ["R_emaildomain_hotmail.fr <= 0.00", -0.27853898618236783], ["R_emaildomain_charter.net <= 0.00", -0.2213270893701423], ["V111 <= -0.03", -0.20515514848841218], ["R_emaildomain_att.net <= 0.00", 0.14065121780995746], ["V27 <= -0.02", 0.1330211919288777], ["V241 <= -0.01", 0.09837807235332173], ["R_emaildomain_servicios-ta.com <= 0.00", 0.09774411445747701]], 1, exp_div);
+                exp.show([["num__V196 <= -0.04", 0.3938829984946997], ["num__V28 <= -0.03", 0.3549514587587965], ["num__C3 <= -0.04", 0.317443671189461], ["num__V27 <= -0.03", 0.3133755203821204], ["num__V89 <= -0.03", 0.28685424256121356], ["num__V269 <= -0.01", 0.286704331195106], ["num__V148 <= 0.15", -0.25312700834551216], ["num__V247 <= -0.04", -0.25283290321637547], ["num__V111 <= -0.04", -0.2255133460309058], ["num__V250 <= 0.20", 0.018237294775499454]], 1, exp_div);
                 
         var raw_div = top_div.append('div');
-            exp.show_raw_tabular([["P_emaildomain_roadrunner.com", "0.00", -0.35048260027242495], ["V117", "-0.01", -0.33415027285192983], ["V193", "-0.05", -0.32141009588385305], ["R_emaildomain_hotmail.fr", "0.00", -0.27853898618236783], ["R_emaildomain_charter.net", "0.00", -0.2213270893701423], ["V111", "-0.03", -0.20515514848841218], ["R_emaildomain_att.net", "0.00", 0.14065121780995746], ["V27", "-0.02", 0.1330211919288777], ["V241", "-0.01", 0.09837807235332173], ["R_emaildomain_servicios-ta.com", "0.00", 0.09774411445747701]], 1, raw_div);
+            exp.show_raw_tabular([["num__V196", "-0.04", 0.3938829984946997], ["num__V28", "-0.03", 0.3549514587587965], ["num__C3", "-0.04", 0.317443671189461], ["num__V27", "-0.03", 0.3133755203821204], ["num__V89", "-0.03", 0.28685424256121356], ["num__V269", "-0.01", 0.286704331195106], ["num__V148", "0.15", -0.25312700834551216], ["num__V247", "-0.04", -0.25283290321637547], ["num__V111", "-0.04", -0.2255133460309058], ["num__V250", "0.20", 0.018237294775499454]], 1, raw_div);
         
         </script>
         </body></html>
