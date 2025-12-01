@@ -1,10 +1,10 @@
 # Ignore datasets
-/data/
+/data/*
 !data/.gitkeep
 
 # Ignore log file
 benchmark.log
 
 # Ignore results
-/results/
+/results/*
 !results/.gitkeep
