@@ -112,7 +112,7 @@ def run_benchmark():
             # 3.4 Generate explanation
             explain.run_xai_pipeline(
                     model=model,
-                    X_train=X_train,
+                    X_train=X_train_full,
                     X_test=X_test,
                     y_test=y_test,
                     model_name=model_name,

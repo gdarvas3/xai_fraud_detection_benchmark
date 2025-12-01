@@ -1,2 +1,8 @@
 # Ignore datasets
 /data/
+
+# Ignore log file
+benchmark.log
+
+# Ignore results
+/results/

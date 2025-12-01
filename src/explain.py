@@ -9,6 +9,8 @@ import logging
 import warnings
 from pathlib import Path
 
+import config
+
 # For server environments (headless plotting)
 matplotlib.use('Agg')
 
@@ -93,7 +95,7 @@ def _get_scoring_function(model):
 # --- SHAP LOGIC ---
 
 def save_shap_plots(shap_values, X_sample, model_name, save_dir: Path):
-    """Saves SHAP plots and feature importance data."""
+    """Saves SHAP plots and feature importance data with cleaned labels."""
     try:
         if shap_values is None:
             return
@@ -101,29 +103,51 @@ def save_shap_plots(shap_values, X_sample, model_name, save_dir: Path):
         # Create directory
         save_dir.mkdir(parents=True, exist_ok=True)
 
-        # 1. Beeswarm Plot
+        # --- 1. FEATURE NAME CLEANING ---
+        # Clean up feature names for better visualization (removing technical prefixes)
+        if hasattr(shap_values, "feature_names") and shap_values.feature_names is not None:
+            clean_names = []
+            for name in shap_values.feature_names:
+                # Remove specific long dataset prefixes
+                new_name = new_name.replace("cat__PERFORM_CNS_SCORE_DESCRIPTION_", "")
+                clean_names.append(new_name)
+            
+            # Overwrite names in the SHAP object for the plots
+            shap_values.feature_names = clean_names
+
+        # --- 2. BEESWARM PLOT ---
         logging.info("Generating SHAP beeswarm plot...")
         plt.figure(figsize=(12, 8))
+        
+        # Create plot
         shap.plots.beeswarm(shap_values, max_display=15, show=False)
-        plt.tight_layout()
-        plt.savefig(save_dir / f"{model_name}_shap_beeswarm.png", dpi=150)
+        
+        # Adjust left margin to fit long labels (Safety measure)
+        plt.subplots_adjust(left=0.35) 
+        
+        plt.savefig(save_dir / f"{model_name}_shap_beeswarm.png", dpi=150, bbox_inches='tight')
         plt.close()
 
-        # 2. Bar Plot
+        # --- 3. BAR PLOT ---
         logging.info("Generating SHAP bar plot...")
         plt.figure(figsize=(12, 8))
+        
         shap.plots.bar(shap_values, max_display=15, show=False)
-        plt.tight_layout()
-        plt.savefig(save_dir / f"{model_name}_shap_bar.png", dpi=150)
+        
+        # Adjust left margin here as well
+        plt.subplots_adjust(left=0.35)
+        
+        plt.savefig(save_dir / f"{model_name}_shap_bar.png", dpi=150, bbox_inches='tight')
         plt.close()
         
-        # 3. CSV Export (Feature Importance)
+        # --- 4. CSV EXPORT (Feature Importance) ---
         logging.info("Saving SHAP feature importance to CSV...")
         
         # Extract values
         if hasattr(shap_values, "values"):
             vals = shap_values.values
-            feature_names = shap_values.feature_names
+            # Use the cleaned names we created above
+            feature_names = shap_values.feature_names 
         else:
             vals = shap_values
             feature_names = X_sample.columns if hasattr(X_sample, "columns") else [f"feat_{i}" for i in range(vals.shape[1])]
@@ -234,7 +258,7 @@ def generate_shap_values(model, X_train_full, X_to_explain, model_name):
 
 # --- LIME LOGIC ---
 
-def generate_lime_explanation(model, X_train, X_test, instance_index, model_name, save_path):
+def generate_lime_explanation(model, X_train, X_test, instance_index, model_name,unique_name, save_path):
     """Generates a single LIME explanation."""
     try:
         feature_names = X_train.columns.tolist()
@@ -285,7 +309,8 @@ def generate_lime_explanation(model, X_train, X_test, instance_index, model_name
         # Save explanation
         if save_path:
             save_path.mkdir(parents=True, exist_ok=True)
-            html_filename = save_path / f"{model_name}_lime_idx{instance_index}.html"
+
+            html_filename = save_path / f"{model_name}_{unique_name}_lime_idx{instance_index}.html"
             explanation.save_to_file(str(html_filename))
             
     except Exception as e:
@@ -328,7 +353,8 @@ def run_local_explanations(model, X_train, X_test, y_test, model_name, save_path
                 generate_lime_explanation(
                     model, X_train, X_test, 
                     instance_index=idx, 
-                    model_name=unique_name, 
+                    model_name=model_name,
+                    unique_name = unique_name, 
                     save_path=save_path
                 )
                 
@@ -345,23 +371,25 @@ def run_xai_pipeline(model, X_train, X_test, y_test, model_name, results_path_sh
     print(f"\n>>> Starting XAI Pipeline: {model_name} <<<")
     
     # 1. SHAP
-    logging.info(f"Calculating SHAP values ({model_name})...")
-    explainer, shap_vals = generate_shap_values(model, X_train, X_test, model_name)
-    if shap_vals is not None:
-        save_shap_plots(shap_vals, X_test, model_name, results_path_shap)
-        logging.info(f"SHAP completed. Saved to: {results_path_shap}")
-    else:
-        logging.warning(f"SHAP failed for: {model_name}")
+    if config.RUN_SHAP:
+        logging.info(f"Calculating SHAP values ({model_name})...")
+        explainer, shap_vals = generate_shap_values(model, X_train, X_test, model_name)
+        if shap_vals is not None:
+            save_shap_plots(shap_vals, X_test, model_name, results_path_shap)
+            logging.info(f"SHAP completed. Saved to: {results_path_shap}")
+        else:
+            logging.warning(f"SHAP failed for: {model_name}")
 
     # 2. LIME
-    logging.info(f"Calculating LIME ({model_name})...")
-    run_local_explanations(
-        model=model, 
-        X_train=X_train, 
-        X_test=X_test, 
-        y_test=y_test, 
-        model_name=model_name, 
-        save_path=results_path_lime,
-        num_examples=1
-    )
-    logging.info(f"LIME completed.")
+    if config.RUN_LIME:
+        logging.info(f"Calculating LIME ({model_name})...")
+        run_local_explanations(
+            model=model, 
+            X_train=X_train, 
+            X_test=X_test, 
+            y_test=y_test, 
+            model_name=model_name, 
+            save_path=results_path_lime,
+            num_examples=1
+        )
+        logging.info(f"LIME completed.")

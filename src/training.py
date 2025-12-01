@@ -260,7 +260,6 @@ def train_and_evaluate_unsupervised(
     # Assumes y_test: 1=Fraud, 0=Normal
     # Assumes model: -1=Outlier (Fraud), 1=Inlier (Normal)
     y_pred_mapped = np.where(y_pred_raw == -1, 1, 0)
-    logging.debug("Mapped unsupervised predictions: -1 -> 1 (fraud), 1 -> 0 (normal).")
 
     # 4. Get anomaly scores (for AUC metrics)
     y_proba_scores = None

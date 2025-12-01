@@ -2,17 +2,35 @@
 
 from pathlib import Path
 
-# # Dataset data - vehivle_loan
-# DATASET_ID = 'vehicle_loan'
-# TARGET_COLUMN = "LOAN_DEFAULT" 
-# COLS_TO_DROP =['UNIQUEID', 'DATE_OF_BIRTH']
-# TIMESTAMP_COLUMN = ''
+# Dataset data - vehicle_loan
+DATASET_ID = 'vehicle_loan'
+TARGET_COLUMN = "LOAN_DEFAULT" 
+COLS_TO_DROP =['UNIQUEID', 'DATE_OF_BIRTH']
+TIMESTAMP_COLUMN = ''
 
-# Dataset data - vehivle_loan
-DATASET_ID = 'ulb_creditcard'
-TARGET_COLUMN = "Class" 
-COLS_TO_DROP =[]
-TIMESTAMP_COLUMN = 'Time'
+# # Dataset data - ulb_creditcard
+# DATASET_ID = 'ulb_creditcard'
+# TARGET_COLUMN = "Class" 
+# COLS_TO_DROP =[]
+# TIMESTAMP_COLUMN = 'Time'
+
+# # Dataset data - bot_accounts
+# DATASET_ID = 'bot_accounts'
+# TARGET_COLUMN = "account_type" 
+# COLS_TO_DROP =['description','profile_background_image_url','profile_image_url','screen_name','profile_background_image_path','profile_image_path', 'location', 'id']
+# TIMESTAMP_COLUMN = 'created_at'
+
+# # # Dataset data - ieee_fraud
+# DATASET_ID = 'ieee_fraud'
+# TARGET_COLUMN = "isFraud" 
+# COLS_TO_DROP =['TransactionID']
+# TIMESTAMP_COLUMN = 'TransactionDT'
+
+# # # Dataset data - sparkov_fraud
+# DATASET_ID = 'sparkov_fraud'
+# TARGET_COLUMN = "is_fraud" 
+# COLS_TO_DROP =['cc_num', 'first', 'last', 'street', 'trans_num']
+# TIMESTAMP_COLUMN = 'trans_date_trans_time'
 
 # --- Project Path Definitions ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
