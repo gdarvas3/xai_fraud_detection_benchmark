@@ -2,11 +2,11 @@
 
 from pathlib import Path
 
-# Dataset data - vehicle_loan
-DATASET_ID = 'vehicle_loan'
-TARGET_COLUMN = "LOAN_DEFAULT" 
-COLS_TO_DROP =['UNIQUEID', 'DATE_OF_BIRTH']
-TIMESTAMP_COLUMN = ''
+# # Dataset data - vehicle_loan
+# DATASET_ID = 'vehicle_loan'
+# TARGET_COLUMN = "LOAN_DEFAULT" 
+# COLS_TO_DROP =['UNIQUEID', 'DATE_OF_BIRTH']
+# TIMESTAMP_COLUMN = ''
 
 # # Dataset data - ulb_creditcard
 # DATASET_ID = 'ulb_creditcard'
@@ -14,11 +14,11 @@ TIMESTAMP_COLUMN = ''
 # COLS_TO_DROP =[]
 # TIMESTAMP_COLUMN = 'Time'
 
-# # Dataset data - bot_accounts
-# DATASET_ID = 'bot_accounts'
-# TARGET_COLUMN = "account_type" 
-# COLS_TO_DROP =['description','profile_background_image_url','profile_image_url','screen_name','profile_background_image_path','profile_image_path', 'location', 'id']
-# TIMESTAMP_COLUMN = 'created_at'
+# Dataset data - bot_accounts
+DATASET_ID = 'bot_accounts'
+TARGET_COLUMN = "account_type" 
+COLS_TO_DROP =['description','profile_background_image_url','profile_image_url','screen_name','profile_background_image_path','profile_image_path', 'location', 'id']
+TIMESTAMP_COLUMN = 'created_at'
 
 # # # Dataset data - ieee_fraud
 # DATASET_ID = 'ieee_fraud'

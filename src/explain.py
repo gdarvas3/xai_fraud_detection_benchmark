@@ -105,7 +105,7 @@ def save_shap_plots(shap_values, X_sample, model_name, save_dir: Path):
 
         # --- 1. FEATURE NAME CLEANING ---
         # Clean up feature names for better visualization (removing technical prefixes)
-        if hasattr(shap_values, "feature_names") and shap_values.feature_names is not None:
+        if config.DATASET_ID=='xxxxx' and hasattr(shap_values, "feature_names") and shap_values.feature_names is not None:
             clean_names = []
             for name in shap_values.feature_names:
                 # Remove specific long dataset prefixes
@@ -125,7 +125,7 @@ def save_shap_plots(shap_values, X_sample, model_name, save_dir: Path):
         # Adjust left margin to fit long labels (Safety measure)
         plt.subplots_adjust(left=0.35) 
         
-        plt.savefig(save_dir / f"{model_name}_shap_beeswarm.png", dpi=150, bbox_inches='tight')
+        plt.savefig(save_dir / f"{model_name}_shap_beeswarm.svg")
         plt.close()
 
         # --- 3. BAR PLOT ---
@@ -137,7 +137,7 @@ def save_shap_plots(shap_values, X_sample, model_name, save_dir: Path):
         # Adjust left margin here as well
         plt.subplots_adjust(left=0.35)
         
-        plt.savefig(save_dir / f"{model_name}_shap_bar.png", dpi=150, bbox_inches='tight')
+        plt.savefig(save_dir / f"{model_name}_shap_bar.svg")
         plt.close()
         
         # --- 4. CSV EXPORT (Feature Importance) ---
