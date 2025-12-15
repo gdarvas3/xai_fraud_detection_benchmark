@@ -21,7 +21,7 @@ from sklearn.svm import LinearSVC
 
 from mapie.classification import MapieClassifier
 from mapie.metrics import classification_coverage_score
- 
+
 # --- Type Hint Definitions ---
 Model = BaseEstimator
 MetricsDict = Dict[str, float]
@@ -38,51 +38,52 @@ def _calculate_metrics(
     Calculates standard metrics. Handles both 1D and 2D (One-Hot/Set) inputs automatically.
     """
     results = {}
-    avg_method = 'weighted' 
+    avg_method = 'weighted'
     
-    # --- 1. Y_TRUE (Igazság) KEZELÉSE ---
+    # --- 1. Handle Y_TRUE ---
     if hasattr(y_true, "values"):
         y_true = y_true.values
         
-    # Ha a target One-Hot kódolt (N, 2), visszaalakítjuk 1D-re (N,)
+    # If target is One-Hot encoded (N, 2), convert back to 1D (N,)
     if y_true.ndim == 2:
         if y_true.shape[1] == 2:
-             # [[0, 1], [1, 0]] -> [1, 0]
+            # Convert class probabilities to class indices (e.g., [0, 1] -> 1)
             y_true = np.argmax(y_true, axis=1)
         else:
             y_true = y_true.ravel()
 
-    # --- 2. Y_PRED (Tipp) KEZELÉSE ---
+    # --- 2. Handle Y_PRED ---
     if hasattr(y_pred, "values"):
         y_pred = y_pred.values
         
-    # Ha a predikció 2D (pl. MAPIE set output), visszaalakítjuk
-    # FIGYELEM: Standard metrikákhoz a "legvalószínűbb" osztály kell, nem a halmaz!
+    # If prediction is 2D (e.g., MAPIE set output), flatten it.
+    # NOTE: Standard metrics require a single "most probable" class, not a set of classes.
     if y_pred.ndim == 2:
-        # Ha ez egy probability output véletlenül
+        # If input is probability output
         if np.issubdtype(y_pred.dtype, np.floating): 
             y_pred = np.argmax(y_pred, axis=1)
-        # Ha ez egy MAPIE boolean set [[True, False]]
+        # If input is a MAPIE boolean set (e.g., [[True, False]])
         elif y_pred.dtype == bool:
-            # Ez egy durva egyszerűsítés: ha bármelyik True, azt vesszük (de standard metrikára nem ideális)
-            # Jobb megoldás: A hívó félnek a sima .predict() eredményét kell átadnia
+            # Simplification: flatten to 1D. 
+            # Note: Ideally, the caller should pass standard .predict() results for these metrics.
             logging.warning("Warning: 2D boolean set passed to standard metrics. Flattening...")
             y_pred = y_pred.ravel() 
 
-    # --- 3. Y_PROBA (Valószínűség) KEZELÉSE ---
-    # Ez kell az AUC-hoz
+    # --- 3. Handle Y_PROBA ---
+    # Required for AUC metrics (ROC-AUC, PR-AUC)
     score_to_use = None
     if y_proba is not None:
         if hasattr(y_proba, "values"):
             y_proba = y_proba.values
             
-        # Ha (N, 2) alakú (pl. [[0.1, 0.9], ...]), akkor a 2. oszlop (Class 1) kell nekünk
+        # If shape is (N, 2) (e.g., [[0.1, 0.9], ...]), select the positive class probability (column 1)
         if y_proba.ndim == 2 and y_proba.shape[1] >= 2:
-            score_to_use = y_proba[:, 1] # Csak a pozitív osztály valószínűsége
+            score_to_use = y_proba[:, 1] 
         else:
             score_to_use = y_proba.ravel()
 
-    # --- SZÁMÍTÁS ---
+    # --- Calculation ---
+    
     for metric_name in metrics_to_calc:
         try:
             if metric_name == 'accuracy':
@@ -102,7 +103,7 @@ def _calculate_metrics(
                 else:
                     results[metric_name] = None
         except Exception as e:
-            # logging.error(f"Error calculating {metric_name}: {e}") # Kikommentelheted, ha zavar a sok log
+            # logging.error(f"Error calculating {metric_name}: {e}") # Uncomment for debugging
             results[metric_name] = None
             
     return results
@@ -145,17 +146,18 @@ def _calculate_conformal_metrics(
     """
     results = {}
     try:
-        # 1. Coverage: Milyen arányban tartalmazza a halmaz a valódi címkét?
-        # A mapie coverage score-ja ezt számolja ki
+        
+        # 1. Coverage: The proportion of true labels contained within the prediction sets.
         cov = classification_coverage_score(y_true, y_pred_sets)
         results['cp_coverage'] = cov
         
-        # 2. Average Set Size: Átlagosan hány osztályt jósoltunk? (Minél kisebb, annál jobb/biztosabb)
-        # y_pred_sets alakja: (n_samples, n_classes, 1) vagy (n_samples, n_classes)
+        # 2. Average Set Size: Mean number of classes predicted per sample.
+        # Smaller set sizes generally indicate a more specific/confident model.
+        # y_pred_sets shape: (n_samples, n_classes, 1) or (n_samples, n_classes)
         set_sizes = y_pred_sets.sum(axis=1)
         results['cp_avg_set_size'] = float(np.mean(set_sizes))
         
-        # 3. Empty Sets: Hány százalékban nem mert semmit mondani?
+        # 3. Empty Sets: Percentage of samples where the model predicted NO class.
         empty_sets = (set_sizes == 0).sum()
         results['cp_empty_set_ratio'] = float(empty_sets / len(y_true))
         
@@ -178,7 +180,6 @@ def train_and_evaluate_supervised(
 ) -> Tuple[MapieClassifier, MetricsDict]:
     """
     Trains and evaluates a single SUPERVISED model.
-    
     """
     
     model_name = type(model).__name__
@@ -204,11 +205,11 @@ def train_and_evaluate_supervised(
     if hasattr(model, "predict_proba"):
         y_proba = model.predict_proba(X_test)
     elif hasattr(model, "decision_function"):
-        # LinearSVC: Nincs predict_proba, de a decision_function eredménye
-        # arányos a valószínűséggel (távolság a hipersíktól), így jó AUC-hoz.
+        # LinearSVC: Does not support predict_proba, but decision_function result
+        # is proportional to probability (distance from hyperplane), making it valid for AUC.
         y_proba = model.decision_function(X_test)
     else:
-        # Végső eset (nem ideális AUC-hoz)
+        # Fallback (not ideal for AUC)
         y_proba = None
 
     # 4. Calculate Standard Metrics (Accuracy, AUC, etc.)
@@ -217,13 +218,13 @@ def train_and_evaluate_supervised(
 
     # 5. Calculate Conformal Metrics (Coverage, Set Size)
     logging.info("Calculating Conformal Metrics...")
-    # y_pis shape is usually (n_samples, n_classes, n_alphas). Since we passed one alpha, take index 0
+    # y_pis usually has shape (n_samples, n_classes, n_alphas). Take index 0 since we passed one alpha.
     y_pis_final = y_pis[:, :, 0] if y_pis.ndim == 3 else y_pis
     conformal_metrics = _calculate_conformal_metrics(y_test, y_pis_final)
     
     # Merge metrics
     all_metrics = {**standard_metrics, **conformal_metrics}
-    all_metrics['alpha'] = alpha # Store what confidence level was used
+    all_metrics['alpha'] = alpha # Store the confidence level used
     
     logging.info(f"Training complete. Coverage: {all_metrics.get('cp_coverage', 'N/A'):.4f}")
     

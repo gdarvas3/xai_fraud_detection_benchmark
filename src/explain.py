@@ -54,8 +54,8 @@ def select_interesting_indices(y_test, y_pred, num_examples=1):
     indices = {
         'TP': np.where((y_test == 1) & (y_pred == 1))[0], # True Positive
         'TN': np.where((y_test == 0) & (y_pred == 0))[0], # True Negative
-        'FP': np.where((y_test == 0) & (y_pred == 1))[0], # False Positive (False Alarm)
-        'FN': np.where((y_test == 1) & (y_pred == 0))[0]  # False Negative (Missed Fraud)
+        'FP': np.where((y_test == 0) & (y_pred == 1))[0], # False Positive 
+        'FN': np.where((y_test == 1) & (y_pred == 0))[0]  # False Negative 
     }
     
     selected_indices = {}

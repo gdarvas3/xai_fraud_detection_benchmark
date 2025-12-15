@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any, Dict
 
 # Plotting imports
-# Use 'Agg' backend for non-GUI (server) environments
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt

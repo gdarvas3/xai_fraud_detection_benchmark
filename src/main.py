@@ -105,9 +105,9 @@ def run_benchmark():
             logging.info(f"Model saved to: {model_save_path}")
 
             if model_name in config.UNSUPERVISED_MODELS:
-                X_train_full = X_train
-            elif model_name in config.SUPERVISED_MODELS:
                 X_train_full = X_train_normal
+            elif model_name in config.SUPERVISED_MODELS:
+                X_train_full = X_train
 
             # 3.4 Generate explanation
             explain.run_xai_pipeline(
